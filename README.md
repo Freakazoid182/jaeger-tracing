@@ -1,6 +1,6 @@
-# Jaeger Tracing with OpenTelemetry and AspNetCore
+# Jaeger Tracing with OpenTelemetry and ASP.NET Core
 
-This is an example on how OpenTelemetry can be set up using Jaeger on AspNet Core
+This is an example on how OpenTelemetry can be set up using Jaeger on ASP.NET Core
 
 - Uses envoy proxy as ingress gateway
 - Uses [MassTransit](https://masstransit-project.com/) and [RabbitMQ](https://www.rabbitmq.com/) as for messaing
@@ -17,3 +17,7 @@ Jaeger: http://localhost:16686
 RabbitMq: http://localhost:15672 (guest/guest)
 
 Telemetry Web Swagger (through Envoy proxy): http://localhost:10000/swagger/index.html
+
+----
+
+![Full end to end](/images/Screenshot1.png)
