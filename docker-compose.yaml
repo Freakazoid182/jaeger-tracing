@@ -1,0 +1,55 @@
+services:
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+    networks:
+      - telemetry_testing
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    networks:
+      - telemetry_testing
+
+  front-envoy:
+    build:
+      context: .
+      dockerfile: envoy/Dockerfile-frontenvoy
+    ports:
+      - "${PORT_PROXY:-10000}:8000"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - telemetry_testing
+
+  telemetry-web:
+    depends_on:
+    - rabbitmq
+    container_name: telemetry_web
+    build:
+      context: .
+      dockerfile: Web.Dockerfile
+    networks:
+      - telemetry_testing
+
+  telemetry-worker:
+    depends_on:
+    - rabbitmq
+    container_name: telemetry_worker
+    build:
+      context: .
+      dockerfile: Worker.Dockerfile
+    networks:
+      - telemetry_testing
+
+networks:
+  telemetry_testing:
+    name: "telemetry_testing"
