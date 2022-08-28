@@ -19,6 +19,7 @@ services:
       - telemetry_testing
 
   front-envoy:
+    container_name: envoy_proxy
     build:
       context: .
       dockerfile: envoy/Dockerfile-frontenvoy

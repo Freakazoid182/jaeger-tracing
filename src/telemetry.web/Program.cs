@@ -8,7 +8,7 @@ using OpenTelemetry.Context.Propagation;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_web";
-var serviceVersion = typeof(Program).Assembly.GetName().Version.ToString();
+var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString();
 
 var builder = WebApplication.CreateBuilder(args);
 

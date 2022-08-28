@@ -8,7 +8,7 @@ using OpenTelemetry.Context.Propagation;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_worker";
-var serviceVersion = "1.0.0";
+var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString();
 
 Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator(new TextMapPropagator[]
 {
