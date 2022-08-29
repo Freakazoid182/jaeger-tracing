@@ -27,7 +27,7 @@ docker logs -f telemetry_web
 docker logs -f telemetry_worker
 ```
 ```sh
-docker logs -f front
+docker logs -f front-envoy
 ```
 
 ## Control the sampling rate
