@@ -3,8 +3,8 @@
 This is an example on how OpenTelemetry can be set up using Jaeger on ASP.NET Core
 
 - Uses envoy proxy as ingress gateway
-- Uses [MassTransit](https://masstransit-project.com/) and [RabbitMQ](https://www.rabbitmq.com/) as for messaing
-- Traces are correlated end to end using [JaegerPropagator](https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Extensions.Propagators/JaegerPropagator.cs)
+- Uses [MassTransit](https://masstransit-project.com/) and [RabbitMQ](https://www.rabbitmq.com/) as for messaging
+- Traces are correlated end-to-end using [JaegerPropagator](https://github.com/open-telemetry/opentelemetry-dotnet/blob/main/src/OpenTelemetry.Extensions.Propagators/JaegerPropagator.cs)
 
 ## Running the solution
 
