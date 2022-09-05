@@ -5,6 +5,8 @@ using MassTransit;
 using OpenTelemetry.Extensions.Propagators;
 using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Extensions.Docker.Resources;
+using telemetry.contracts;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_web";
@@ -27,10 +29,10 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .AddSource("MassTransit")
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+            .AddDetector(new DockerResourceDetector()))
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation()
-    .AddSqlClientInstrumentation()
     .AddJaegerExporter(o => {
         o.AgentHost = "jaeger";
     });
@@ -51,6 +53,7 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+EndpointConvention.Map<CreateProduct>(new Uri("rabbitmq://rabbitmq/%2F/telemetry-worker"));
 
 // Add services to the container.
 

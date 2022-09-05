@@ -18,6 +18,13 @@ services:
     networks:
       - telemetry_testing
 
+  sql-server:
+    container_name: sql_server
+    build:
+      context: sql
+    networks:
+      - telemetry_testing
+
   front-envoy:
     container_name: envoy_proxy
     build:

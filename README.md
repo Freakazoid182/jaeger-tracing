@@ -64,3 +64,5 @@ sampler:
 ----
 
 ![Full end to end](/images/Screenshot1.png)
+
+![Full end to end SQL](/images/Screenshot2.png)

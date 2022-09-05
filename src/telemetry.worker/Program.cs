@@ -5,6 +5,9 @@ using OpenTelemetry.Trace;
 using OpenTelemetry;
 using OpenTelemetry.Extensions.Propagators;
 using OpenTelemetry.Context.Propagation;
+using OpenTelemetry.Extensions.Docker.Resources;
+using telemetry.worker.Internal;
+using telemetry.worker.Data;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_worker";
@@ -25,9 +28,15 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .AddConsoleExporter()
     .AddSource(serviceName)
     .AddSource("MassTransit")
+    .AddSqlClientInstrumentation(o =>
+    {
+        o.SetDbStatementForText = true;
+        o.EnableConnectionLevelAttributes = true;
+    })
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
-            .AddService(serviceName: serviceName, serviceVersion: serviceVersion))
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+            .AddDetector(new DockerResourceDetector()))
     .AddJaegerExporter(o => {
         o.AgentHost = "jaeger";
     });
@@ -35,7 +44,9 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 
 builder.Services.AddMassTransit(x =>
 {
-    x.AddConsumer<TestConsumer>(typeof(TestConsumerDefinition));
+    x.AddConsumer<TestConsumer>(typeof(DefaultConsumerDefinition<TestConsumer>));
+
+    x.AddConsumer<InsertProductConsumer>(typeof(DefaultConsumerDefinition<InsertProductConsumer>));
 
     x.UsingRabbitMq((context,cfg) =>
     {
@@ -47,6 +58,8 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddSingleton<IProductsRepository, ProductsRepository>();
 
 var app = builder.Build();
 

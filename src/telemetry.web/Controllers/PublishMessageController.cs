@@ -19,7 +19,7 @@ public class PublishMessageController : ControllerBase
         _bus = bus;
     }
 
-    [HttpPost(Name = "PostMessage")]
+    [HttpPost]
     public Task Post()
     {
         return _bus.Publish<TestMessage>(new TestMessage { MessageId = Guid.NewGuid() });
