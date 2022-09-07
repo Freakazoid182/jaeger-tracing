@@ -7,6 +7,7 @@ using OpenTelemetry;
 using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Extensions.Docker.Resources;
 using telemetry.contracts;
+using StackExchange.Redis;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_web";
@@ -19,6 +20,17 @@ Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator(new TextMapPropag
     new TraceContextPropagator(),
     new JaegerPropagator()
 }));
+
+ConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect("redis");
+builder.Services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
+builder.Services.AddStackExchangeRedisCache(setup =>
+{
+    setup.ConnectionMultiplexerFactory = () =>
+    {
+        return Task.FromResult((IConnectionMultiplexer)connectionMultiplexer);
+    };
+    setup.InstanceName = "telemetry";
+});
 
 // Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
@@ -33,6 +45,12 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             .AddDetector(new DockerResourceDetector()))
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation()
+    .AddRedisInstrumentation(configure: cfg => {
+        if(builder.Environment.IsDevelopment())
+        {
+            cfg.SetVerboseDatabaseStatements = true;
+        }
+    })
     .AddJaegerExporter(o => {
         o.AgentHost = "jaeger";
     });

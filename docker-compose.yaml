@@ -25,6 +25,12 @@ services:
     networks:
       - telemetry_testing
 
+  redis:
+    container_name: redis
+    image: redis:latest
+    networks:
+      - telemetry_testing
+
   front-envoy:
     container_name: envoy_proxy
     build:
@@ -42,6 +48,8 @@ services:
     depends_on:
     - rabbitmq
     container_name: telemetry_web
+    environment:
+      - DOTNET_ENVIRONMENT=Development
     build:
       context: .
       dockerfile: Web.Dockerfile
@@ -52,6 +60,8 @@ services:
     depends_on:
     - rabbitmq
     container_name: telemetry_worker
+    environment:
+      - DOTNET_ENVIRONMENT=Development
     build:
       context: .
       dockerfile: Worker.Dockerfile
