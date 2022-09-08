@@ -1,4 +1,5 @@
 using MassTransit;
+using Nest;
 using telemetry.contracts;
 using telemetry.worker.Data;
 using telemetry.worker.Models;
@@ -11,16 +12,21 @@ class InsertProductConsumer :
 
     readonly ILogger<InsertProductConsumer> _logger;
     private readonly IProductsRepository _productsRepository;
+    private readonly IElasticClient _elasticClient;
 
-    public InsertProductConsumer(ILogger<InsertProductConsumer> logger, IProductsRepository productsRepository)
+    public InsertProductConsumer(ILogger<InsertProductConsumer> logger, IProductsRepository productsRepository, IElasticClient elasticClient)
     {
         _logger = logger;
         _productsRepository = productsRepository;
+        _elasticClient = elasticClient;
     }
 
-    public Task Consume(ConsumeContext<CreateProduct> context)
+    public async Task Consume(ConsumeContext<CreateProduct> context)
     {
         if(context.Message.Name == null) throw new InvalidOperationException($"nameof(context.Message.Name) is null.");
-        return _productsRepository.InsertAsync(new Product(context.Message.Id, context.Message.Name, DateTimeOffset.UtcNow));
+        var product = new Product(context.Message.Id, context.Message.Name, DateTimeOffset.UtcNow);
+        await _productsRepository.InsertAsync(product);
+
+        await _elasticClient.IndexDocumentAsync<Product>(product);
     }
 }

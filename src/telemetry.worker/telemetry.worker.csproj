@@ -15,11 +15,14 @@
     <PackageReference Include="OpenTelemetry.Extensions.Docker" Version="1.0.0-beta.1" />
     <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.0.0-rc9.6" />
     <PackageReference Include="OpenTelemetry.Extensions.Propagators" Version="1.4.0-alpha.2" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.ElasticsearchClient" Version="1.0.0-beta.3" />
     <PackageReference Include="OpenTelemetry.Instrumentation.SqlClient" Version="1.0.0-rc9.6" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\telemetry.contracts\telemetry.contracts.csproj" />
+    <ProjectReference Include="..\telemetry.domain\telemetry.domain.csproj" />
+    <ProjectReference Include="..\telemetry.infrastructure\telemetry.infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

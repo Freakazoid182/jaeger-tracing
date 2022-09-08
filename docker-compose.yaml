@@ -31,6 +31,14 @@ services:
     networks:
       - telemetry_testing
 
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.6
+    environment:
+    - "discovery.type=single-node"
+    networks:
+      - telemetry_testing
+
   front-envoy:
     container_name: envoy_proxy
     build:

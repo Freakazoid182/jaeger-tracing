@@ -8,6 +8,7 @@ using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Extensions.Docker.Resources;
 using telemetry.worker.Internal;
 using telemetry.worker.Data;
+using telemetry.infrastructure.Elasticsearch;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_worker";
@@ -28,10 +29,20 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
     .AddConsoleExporter()
     .AddSource(serviceName)
     .AddSource("MassTransit")
+    .AddElasticsearchClientInstrumentation(cfg =>
+    {
+        if(builder.Environment.IsDevelopment())
+        {
+            cfg.ParseAndFormatRequest = true;
+        }
+    })
     .AddSqlClientInstrumentation(o =>
     {
-        o.SetDbStatementForText = true;
-        o.EnableConnectionLevelAttributes = true;
+        if(builder.Environment.IsDevelopment())
+        {
+            o.SetDbStatementForText = true;
+            o.EnableConnectionLevelAttributes = true;
+        }
     })
     .SetResourceBuilder(
         ResourceBuilder.CreateDefault()
@@ -41,6 +52,8 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
         o.AgentHost = "jaeger";
     });
 });
+
+builder.Services.AddElasticsearch();
 
 builder.Services.AddMassTransit(x =>
 {

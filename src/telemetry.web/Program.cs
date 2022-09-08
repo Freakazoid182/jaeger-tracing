@@ -8,6 +8,7 @@ using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Extensions.Docker.Resources;
 using telemetry.contracts;
 using StackExchange.Redis;
+using telemetry.infrastructure.Elasticsearch;
 
 // Define some important constants to initialize tracing with
 var serviceName = "telemetry_web";
@@ -32,6 +33,9 @@ builder.Services.AddStackExchangeRedisCache(setup =>
     setup.InstanceName = "telemetry";
 });
 
+
+builder.Services.AddElasticsearch();
+
 // Configure important OpenTelemetry settings, the console exporter, and instrumentation library
 builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
 {
@@ -45,6 +49,13 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             .AddDetector(new DockerResourceDetector()))
     .AddHttpClientInstrumentation()
     .AddAspNetCoreInstrumentation()
+    .AddElasticsearchClientInstrumentation(cfg =>
+    {
+        if(builder.Environment.IsDevelopment())
+        {
+            cfg.ParseAndFormatRequest = true;
+        }
+    })
     .AddRedisInstrumentation(configure: cfg => {
         if(builder.Environment.IsDevelopment())
         {
