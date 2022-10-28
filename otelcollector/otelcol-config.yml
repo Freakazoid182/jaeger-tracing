@@ -1,0 +1,58 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
+  otlp/spanmetrics:
+    protocols:
+      grpc:
+        endpoint: "localhost:65535"
+
+exporters:
+  otlp:
+    endpoint: "jaeger:4317"
+    tls:
+      insecure: true
+
+  logging:
+
+  loki:
+    endpoint: "http://loki:3100/loki/api/v1/push"
+    tenant_id: "tenant1"
+    tls:
+      insecure: true
+    format: json
+    labels:
+      attributes:
+        dotnet.ilogger.category: "category"
+
+  prometheus:
+    endpoint: "otelcol:9464"
+
+
+processors:
+  batch:
+  spanmetrics:
+    metrics_exporter: prometheus
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, loki]
+    traces:
+      receivers: [otlp]
+      processors: [spanmetrics, batch]
+      exporters: [logging, otlp]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheus, logging]
+    metrics/spanmetrics:
+      receivers: [ otlp/spanmetrics ]
+      exporters: [ prometheus, logging ]

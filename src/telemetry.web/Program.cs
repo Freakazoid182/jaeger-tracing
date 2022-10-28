@@ -1,11 +1,8 @@
-
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using MassTransit;
-using OpenTelemetry.Extensions.Propagators;
-using OpenTelemetry;
-using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Extensions.Docker.Resources;
+using MassTransit;
 using telemetry.contracts;
 using StackExchange.Redis;
 using telemetry.infrastructure.Elasticsearch;
@@ -15,12 +12,6 @@ var serviceName = "telemetry_web";
 var serviceVersion = typeof(Program).Assembly.GetName().Version?.ToString();
 
 var builder = WebApplication.CreateBuilder(args);
-
-Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator(new TextMapPropagator[]
-{
-    new TraceContextPropagator(),
-    new JaegerPropagator()
-}));
 
 ConnectionMultiplexer connectionMultiplexer = ConnectionMultiplexer.Connect("redis");
 builder.Services.AddSingleton<IConnectionMultiplexer>(connectionMultiplexer);
@@ -62,10 +53,28 @@ builder.Services.AddOpenTelemetryTracing(tracerProviderBuilder =>
             cfg.SetVerboseDatabaseStatements = true;
         }
     })
-    .AddJaegerExporter(o => {
-        o.AgentHost = "jaeger";
+    .AddOtlpExporter(opt =>
+    {
+        opt.Endpoint = new Uri("http://otel-col:4317");
+        opt.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
     });
 });
+
+builder.Services.AddOpenTelemetryMetrics(builder => builder
+    .ConfigureResource(r => r.AddTelemetrySdk())
+    .AddRuntimeInstrumentation()
+    .AddAspNetCoreInstrumentation()
+    .SetResourceBuilder(
+        ResourceBuilder.CreateDefault()
+            .AddService(serviceName: serviceName, serviceVersion: serviceVersion)
+            .AddDetector(new DockerResourceDetector()))
+    .AddOtlpExporter(opt =>
+    {
+        opt.Endpoint = new Uri("http://otel-col:4317");
+        opt.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+    }
+));
+
 
 builder.Services.AddMassTransit(x =>
 {
